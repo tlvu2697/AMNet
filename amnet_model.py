@@ -124,14 +124,14 @@ class AMemNetModel(nn.Module):
         super(AMemNetModel, self).__init__()
 
         self.hps = hps
-        self.use_attention = hps.use_attention
+        self.use_attention = True
         #self.force_distribute_attention = hps.force_distribute_attention
         self.with_bn = True
 
         self.a_vec_size = a_vec_size    # D
         self.a_vec_num = a_res * a_res  # L
 
-        self.seq_len = hps.seq_steps
+        self.seq_len = 3
         self.lstm_input_size = self.a_vec_size
         self.lstm_hidden_size = 1024  # H Also LSTM output
         self.lstm_layers = 1
@@ -166,10 +166,7 @@ class AMemNetModel(nn.Module):
         self.drop50 = nn.Dropout(0.5)
         self.drop80 = nn.Dropout(0.80)
 
-        if hps.torch_version_major == 0 and hps.torch_version_minor < 3:
-            self.softmax = nn.Softmax()
-        else:
-            self.softmax = nn.Softmax(dim=1)
+        self.softmax = nn.Softmax(dim=1)
 
 
     def forward(self, x):
