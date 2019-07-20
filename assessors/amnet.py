@@ -7,7 +7,6 @@ from amnet_model import *
 import amnet_model as amnet_model
 
 class AMNet:
-
     def __init__(self):
         self.model = None
         self.transform = None
@@ -30,14 +29,13 @@ class AMNet:
         np.random.seed(rnd_seed)
         torch.manual_seed(rnd_seed)
 
-        torch.cuda.set_device('cuda:0')
+        torch.cuda.set_device(0)
         torch.cuda.manual_seed(rnd_seed)
 
         self.model = model
         self.init_transformations()
         self.load_checkpoint(self.checkpoint)
         return
-
 
     def init_transformations(self):
         self.transform = transforms.Compose([
@@ -59,13 +57,12 @@ class AMNet:
             self.model_weights_current = ''
             return False
 
-        try:
-            self.model.load_weights(cpnt['model'])
-        except:
-            self.model.load_state_dict(cpnt['model'], strict=False)
+        self.model.load_state_dict(cpnt['model'], strict=False)
+        for param in self.model.parameters():
+            param.requires_grad = False
+        self.model.cuda()
 
         return True
-
 
     def postprocess(self, outputs):
         output = (outputs).sum(1)
@@ -76,10 +73,7 @@ class AMNet:
 
         return output
 
-
     def predict(self, data):
-        self.model.eval()
-        self.model.cuda()
 
         _, outputs_, _ = self.model(data)
         memity = self.postprocess(outputs_)
