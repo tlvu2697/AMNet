@@ -124,12 +124,20 @@ class PredictionResult():
 
                 # Scale to the source image dimensions
                 heat_map_img = cv2.resize(img_alpha, out_size, interpolation=cv2.INTER_CUBIC)
+                mask = np.copy(heat_map_img)
+
                 heat_map_img = cv2.applyColorMap(heat_map_img, cv2.COLORMAP_JET)
 
                 alpha = 0.5
                 beta = (1.0 - alpha)
                 img_heat_map_blend = cv2.addWeighted(img, alpha, heat_map_img, beta, 0.0)
+
+                mask = np.interp(mask, (mask.min(), mask.max()), (0.1, 1))
+                mask = np.transpose(np.stack([mask]*3), [1, 2, 0])
+                img_masked = cv2.multiply(img, mask, dtype = cv2.CV_8U)
+
                 # amaps.append(img_heat_map_blend)
+                # amaps.append(img_masked)
 
                 y_pos= (s+1) * (224+offset*2)
                 canvas[offset:224 + offset, y_pos+offset:y_pos+224+offset, :] = img_heat_map_blend
@@ -155,6 +163,16 @@ class PredictionResult():
             out_filename += '_att'+ext
             out_filename = os.path.join(out_dir, out_filename)
             cv2.imwrite(out_filename, att_map[0])
+
+        # for att_map, source_image_filename in zip(att_maps, self.image_names):
+            # path, filename = os.path.split(source_image_filename)
+            # out_filename, ext = os.path.splitext(filename)
+
+            # for index, att in enumerate(att_map):
+                # output = out_filename + f'-{index}'+ext
+                # output = os.path.join(out_dir, output)
+                # cv2.imwrite(output, att)
+
 
         return
 
@@ -283,7 +301,7 @@ class AMNet:
         try:
             self.model.load_weights(cpnt['model'])
         except:
-            self.model.load_state_dict(cpnt['model'])
+            self.model.load_state_dict(cpnt['model'], strict=False)
 
         return True
 

@@ -97,6 +97,17 @@ def main():
 
         return
 
+    # from tqdm import tqdm
+    # import glob
+    # if hps.eval_images != '':
+        # videos = glob.glob('frames-1/*')
+
+        # for video in tqdm(videos):
+            # result = amnet.predict_memorability(video)
+            # result.write_attention_maps(video)
+
+        # return
+
     # Training phase
     amnet.train()
 
