@@ -133,11 +133,17 @@ class PredictionResult():
                 img_heat_map_blend = cv2.addWeighted(img, alpha, heat_map_img, beta, 0.0)
 
                 mask = np.interp(mask, (mask.min(), mask.max()), (0.1, 1))
+                mask[mask < 0.5] = 0
+                mask[mask >= 0.5] = 1
+
+                kernel = np.ones((5, 5), np.uint8)
+                mask = cv2.dilate(mask, kernel, iterations = 3)
+
                 mask = np.transpose(np.stack([mask]*3), [1, 2, 0])
                 img_masked = cv2.multiply(img, mask, dtype = cv2.CV_8U)
 
-                # amaps.append(img_heat_map_blend)
-                # amaps.append(img_masked)
+                amaps.append(img_heat_map_blend)
+                amaps.append(img_masked)
 
                 y_pos= (s+1) * (224+offset*2)
                 canvas[offset:224 + offset, y_pos+offset:y_pos+224+offset, :] = img_heat_map_blend
